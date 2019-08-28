@@ -1,0 +1,42 @@
+version: '3'
+services:
+  notebook:
+    build:
+      context: ./jupyter
+    ports:
+      - "8888:8888"
+    depends_on: 
+      - mlflow
+    environment: 
+      MLFLOW_TRACKING_URI: 'http://mlflow:5000'
+    volumes: 
+      - file-store:/home/jovyan
+  mlflow:
+    build:
+      context: ./mlflow
+    expose: 
+      - "5000"
+    ports:
+      - "5000:5000"
+    depends_on: 
+      - postgres
+  postgres:
+    build:
+      context: ./postgres
+    restart: always
+    environment:
+      POSTGRES_USER: 'admin'
+      POSTGRES_PASSWORD: 'secret'
+    ports: 
+      - "5432:5432"
+    volumes:
+      - postgres-store:/var/lib/postgresql/data
+
+volumes:
+  postgres-store:
+  file-store:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/Users/yhu/Documents/work/mlflow/jupyter'
